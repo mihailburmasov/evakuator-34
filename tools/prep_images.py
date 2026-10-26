@@ -40,6 +40,22 @@ for name, (src, crop) in PHOTOS.items():
         img = img.crop(crop)
     manifest[name] = save_webp(img, name)
 
+# Фон первого экрана — стоковое фото (Wikimedia Commons, CC0):
+# https://commons.wikimedia.org/wiki/File:Moscow,_yellow_Porsche_on_a_red-white_Iveco,_May_2026_01.jpg
+# Номера машин и надпись чужой фирмы на платформе размываем.
+from PIL import ImageFilter
+hero = Image.open(ROOT / "_stock" / "hero-commons-original.jpg").convert("RGB")
+k = hero.width / 1920  # координаты сняты с превью шириной 1920
+for x1, y1, x2, y2 in [(1430, 980, 1595, 1032), (790, 760, 880, 825), (0, 1120, 210, 1180),
+                       (1675, 703, 1775, 747), (0, 698, 50, 732), (485, 722, 552, 760)]:
+    box = tuple(round(v * k) for v in (x1, y1, x2, y2))
+    hero.paste(hero.crop(box).filter(ImageFilter.GaussianBlur(14)), box)
+# отзеркаливаем: платформа с машиной уходит вправо, в открытую часть, кабина — под градиент
+from PIL import ImageOps
+hero = ImageOps.mirror(hero)
+for w in (2400, 1600, 960):
+    hero.resize((w, round(hero.height * w / hero.width)), Image.LANCZOS).save(OUT / f"hero-evakuator-{w}.webp", "WEBP", quality=78, method=6)
+
 # OG-картинка: фото легкового эвакуатора + тёмная плашка с телефоном
 og = Image.open(SRC / PHOTOS["evakuator-legkovoy"][0]).convert("RGB")
 scale = 1200 / og.width

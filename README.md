@@ -12,6 +12,7 @@
 | `src/css`, `src/js`, `src/fonts`, `src/img` | Стили, скрипт, шрифты Oswald и PT Sans (свои файлы, не Google), фото в WebP |
 | `tools/prep_images.py` | Пересобирает WebP, OG-картинку и иконки из фото старого сайта |
 | `_old_site/` | Копия старого сайта: HTML и 4 фото |
+| `_stock/` | Стоковое фото для фона главной: [Wikimedia Commons, CC0](https://commons.wikimedia.org/wiki/File:Moscow,_yellow_Porsche_on_a_red-white_Iveco,_May_2026_01.jpg). `prep_images.py` размывает на нём номера и надписи и отзеркаливает его. На сайте подписано «Фото для примера». Когда будет широкое (от 2400 px) фото эвакуатора клиента, заменить его. |
 
 ```
 python build.py          # черновик: пробелы в фактах видны оранжевыми пометками

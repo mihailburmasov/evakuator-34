@@ -260,7 +260,7 @@ def page(path, title, desc, body, ld=(), crumbs=None, noindex=False):
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="theme-color" content="#1e2d3f">
+<meta name="theme-color" content="#ffffff">
 <meta name="yandex-verification" content="{S["yandex_verification"]}">
 <link rel="icon" href="/img/favicon-32.png" type="image/png">
 <link rel="apple-touch-icon" href="/img/apple-touch-icon.png">
@@ -416,10 +416,17 @@ def fleet_block():
 </div></section>'''
 
 
-def hero(h1, lead, img, img_alt, chips, eyebrow):
+def hero(h1, lead, img, img_alt, chips, eyebrow, bg=None):
+    """bg=(имя, alt, подпись-источник) — фото на всю ширину с переходом в фон, как на plitka-volzhsky."""
     chips_html = "".join(f'<li>{ICON_CHECK}<span>{c}</span></li>' for c in chips)
     pic = picture(img, img_alt, sizes="(max-width: 860px) 100vw, 46vw", eager=True, cls="hero-img") if img else ""
-    return f'''<section class="hero{' hero-noimg' if not img else ''}"><div class="wrap hero-in">
+    bg_html = credit = ""
+    if bg:
+        name, alt, credit = bg
+        bg_html = f'<div class="hero-bg-img">{picture(name, alt, sizes="100vw", eager=True)}</div>'
+        credit = f'<p class="hero-credit">{credit}</p>'
+    cls = " hero-full" if bg else " hero-noimg" if not img else ""
+    return f'''<section class="hero{cls}">{bg_html}<div class="wrap hero-in">
   <div class="hero-text">
     <p class="eyebrow">{eyebrow}</p>
     <h1>{h1}</h1>
@@ -428,8 +435,8 @@ def hero(h1, lead, img, img_alt, chips, eyebrow):
     <div class="hero-actions">{tel_link("btn btn-call btn-lg")}{messenger_btn("whatsapp", "WhatsApp", "https://wa.me/{}")}</div>
     <p class="hero-note">Круглосуточно · вызов бесплатно</p>
   </div>
-  {f'<div class="hero-media">{pic}</div>' if pic else ''}
-</div></section>'''
+  {f'<div class="hero-media">{pic}</div>' if pic and not bg else ''}
+</div>{credit}</section>'''
 
 
 # ---------- страницы ----------
@@ -443,6 +450,9 @@ def home():
         "evakuator-legkovoy", "Эвакуатор везёт серебристый седан по трассе под Волжским",
         ["Вызов бесплатно", "Легковые от 1 500 ₽", "До 5 тонн", "До 5 пассажиров"],
         "Волжский · Ахтуба · Ленинск · Быково · Краснослободск · Дубовка · Горный Балыклей · Знаменск",
+        bg=("hero-evakuator", "Эвакуатор с платформой везёт жёлтый спорткар по городу",
+            'Фото для примера · <a href="https://commons.wikimedia.org/wiki/File:Moscow,_yellow_Porsche_on_a_red-white_Iveco,_May_2026_01.jpg" '
+            'target="_blank" rel="noopener">Wikimedia Commons</a>, CC0'),
     )
     body += services_grid()
     body += f'''<section class="section section-alt" id="ceny"><div class="wrap price-layout">
