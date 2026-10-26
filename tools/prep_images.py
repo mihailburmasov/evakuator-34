@@ -64,6 +64,20 @@ box = tuple(round(v * k) for v in (1340, 512, 1462, 550))
 logan.paste(logan.crop(box).filter(ImageFilter.GaussianBlur(10)), box)
 manifest["evakuator-logan"] = save_webp(logan, "evakuator-logan")
 
+# Фото для плиток «Что случилось?» и карточек услуг (Wikimedia Commons, авторы — в _stock/credits.json).
+# Кадрирование задаётся долями ширины/высоты; точку фокуса потом подбирает CSS (object-position).
+SITUATIONS = {
+    "dtp": None, "hood": (0.0, 0.0, 1.0, 1.0), "moto": (0.25, 0.05, 1.0, 1.0),
+    "atv": (0.0, 0.3, 0.72, 1.0), "boat": None, "road": None,
+}
+for name, crop in SITUATIONS.items():
+    im = Image.open(ROOT / "_stock" / f"sit-{name}.jpg").convert("RGB")
+    if crop:
+        w, h = im.size
+        im = im.crop((round(crop[0] * w), round(crop[1] * h), round(crop[2] * w), round(crop[3] * h)))
+    for w in (900, 500):
+        im.resize((w, round(im.height * w / im.width)), Image.LANCZOS).save(OUT / f"sit-{name}-{w}.webp", "WEBP", quality=78, method=6)
+
 # OG-картинка: стоковое фото эвакуатора с машиной + тёмная плашка с телефоном
 og = logan.copy()
 scale = 1200 / og.width

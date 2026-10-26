@@ -157,12 +157,50 @@ ul,ol{margin:0;padding:0;list-style:none}
 
 /* услуги */
 .svc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:16px;margin-top:26px}
-.svc-card{display:flex;flex-direction:column;height:100%;padding:22px 22px 20px;background:var(--white);border:1px solid var(--line);border-radius:var(--radius);text-decoration:none;transition:border-color .15s,transform .15s,box-shadow .15s}
+.svc-card{display:flex;flex-direction:column;height:100%;padding:0;overflow:hidden;background:var(--white);border:1px solid var(--line);border-radius:var(--radius);text-decoration:none;transition:border-color .15s,transform .15s,box-shadow .15s}
 .section-alt .svc-card{background:var(--paper)}
 .svc-card:hover{border-color:var(--amber);transform:translateY(-2px);box-shadow:var(--shadow)}
+.svc-img{display:block;aspect-ratio:16/10;overflow:hidden;background:var(--soft-bg)}
+.svc-img img{width:100%;height:100%;object-fit:cover;transition:transform .5s cubic-bezier(.2,.7,.2,1)}
+.svc-card:hover .svc-img img{transform:scale(1.05)}
+.svc-body{display:flex;flex-direction:column;flex:1;padding:18px 22px 20px}
 .svc-card h3{margin-bottom:6px}
 .svc-card p{color:var(--muted);flex:1;margin-bottom:14px}
 .svc-price{align-self:flex-start;font:600 19px/1 var(--head);background:var(--tag-bg);color:var(--tag-ink);padding:8px 12px;border-radius:8px}
+
+/* «Что случилось?» — плитки с фото */
+.kicker{font:500 14px/1.3 var(--head);letter-spacing:.1em;text-transform:uppercase;color:var(--accent-text);margin-bottom:8px}
+.sit-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:24px}
+@media(max-width:960px){.sit-grid{grid-template-columns:repeat(2,1fr);gap:10px}}
+.sit-tile{position:relative;display:block;aspect-ratio:4/3;border-radius:var(--radius);overflow:hidden;background:var(--soft-bg);text-decoration:none;color:#fff;box-shadow:var(--shadow)}
+.sit-tile img{width:100%;height:100%;object-fit:cover;transition:transform .6s cubic-bezier(.2,.7,.2,1)}
+.sit-tile::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(15,17,20,0) 40%,rgba(15,17,20,.78) 100%);transition:background .3s}
+.sit-tile:hover img{transform:scale(1.06)}
+.sit-tile:hover::after{background:linear-gradient(180deg,rgba(15,17,20,.05) 30%,rgba(15,17,20,.85) 100%)}
+.sit-label{position:absolute;left:16px;right:16px;bottom:14px;z-index:1;display:flex;justify-content:space-between;align-items:flex-end;gap:10px;font:600 20px/1.15 var(--head);text-shadow:0 1px 8px rgba(0,0,0,.4)}
+.sit-label i{font-style:normal;display:grid;place-items:center;flex-shrink:0;width:34px;height:34px;border-radius:50%;background:var(--amber);color:var(--amber-ink);font-size:18px;text-shadow:none;transition:transform .25s}
+.sit-tile:hover .sit-label i{transform:translateX(3px)}
+@media(max-width:520px){.sit-label{left:12px;right:10px;bottom:10px;font-size:16px}.sit-label i{width:28px;height:28px;font-size:15px}}
+.photo-credits{margin:18px 0 0;font-size:12.5px;color:var(--muted)}
+.photo-credits a{color:inherit}
+
+/* география: карточки + карта */
+.geo-layout{display:grid;grid-template-columns:1fr 1.1fr;gap:20px;align-items:stretch;margin-top:24px}
+.geo-layout .geo-grid{grid-template-columns:repeat(2,1fr);margin-top:0;align-content:start}
+.geo-map{border-radius:var(--radius);overflow:hidden;min-height:420px;background:var(--soft-bg);box-shadow:var(--shadow)}
+.geo-map{position:relative;z-index:0}
+.geo-map-ph{margin:0;padding:24px;color:var(--muted);font-size:15px}
+@media(max-width:960px){.geo-layout{grid-template-columns:1fr}.geo-map{min-height:340px}}
+@media(max-width:440px){.geo-layout .geo-grid{grid-template-columns:1fr}}
+.map-pin{position:relative;cursor:pointer;border-radius:50%;background:var(--amber);border:3px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.35)}
+.map-pin.is-main{background:#e85d04;transform:scale(1.25)}
+.map-pin span{position:absolute;white-space:nowrap;font:600 14px/1 var(--head);color:var(--text);background:rgba(255,255,255,.94);padding:4px 7px;border-radius:6px;box-shadow:0 1px 4px rgba(0,0,0,.2);top:50%;left:calc(100% + 6px);transform:translateY(-50%)}
+.map-pin.lbl-l span{left:auto;right:calc(100% + 6px)}
+.map-pin.lbl-t span{top:auto;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%)}
+.map-pin.lbl-b span{top:calc(100% + 6px);left:50%;transform:translateX(-50%)}
+.map-pin.is-main span{font-size:12px}
+.map-pin:hover span{background:var(--amber)}
+.leaflet-container{font-family:var(--body)}
 
 /* цены */
 .price-layout{display:grid;grid-template-columns:1fr 1.15fr;gap:40px;align-items:start}
@@ -364,7 +402,7 @@ ul,ol{margin:0;padding:0;list-style:none}
 
 /* карточки услуг: стрелка выезжает при наведении */
 .svc-card{position:relative}
-.svc-card::after{content:"→";position:absolute;right:20px;bottom:18px;font:600 24px/1 var(--head);color:var(--accent-text);opacity:0;transform:translateX(-10px);transition:opacity .2s,transform .2s}
+.svc-card::after{content:"→";position:absolute;right:22px;bottom:22px;font:600 24px/1 var(--head);color:var(--accent-text);opacity:0;transform:translateX(-10px);transition:opacity .2s,transform .2s}
 .svc-card:hover::after{opacity:1;transform:none}
 .svc-price{transition:background .2s}
 .svc-card:hover .svc-price{background:var(--amber)}

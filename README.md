@@ -12,7 +12,8 @@
 | `src/css`, `src/js`, `src/fonts`, `src/img` | Стили, скрипт, шрифты Oswald и PT Sans (свои файлы, не Google), фото в WebP |
 | `tools/prep_images.py` | Пересобирает WebP, OG-картинку и иконки из фото старого сайта |
 | `_old_site/` | Копия старого сайта: HTML и 4 фото |
-| `_stock/` | Стоковые фото. Для внутренних страниц и картинки для соцсетей — [Logan на эвакуаторе, Cjp24, CC BY-SA 4.0](https://commons.wikimedia.org/wiki/File:Dacia_Logan_sur_d%C3%A9panneuse.jpg); подпись с автором обязательна, `build.py` ставит её сам (`STOCK_CREDITS`). Для фона главной: [Wikimedia Commons, CC0](https://commons.wikimedia.org/wiki/File:Moscow,_yellow_Porsche_on_a_red-white_Iveco,_May_2026_01.jpg). `prep_images.py` размывает на нём номера и надписи и отзеркаливает его. На сайте подписано «Фото для примера». Когда будет широкое (от 2400 px) фото эвакуатора клиента, заменить его. |
+| `src/vendor/leaflet/` | Leaflet 1.9.4 для карты на главной (тайлы OpenStreetMap). Подключается из `main.js`, только когда блок с картой доходит до экрана |
+| `_stock/` | Стоковые фото. Плитки «Что случилось?» и карточки услуг: исходники `sit-*.jpg`, авторы и лицензии — `credits.json` (подписи выводит `build.py`, функция `credits_line`). Для внутренних страниц и картинки для соцсетей — [Logan на эвакуаторе, Cjp24, CC BY-SA 4.0](https://commons.wikimedia.org/wiki/File:Dacia_Logan_sur_d%C3%A9panneuse.jpg); подпись с автором обязательна, `build.py` ставит её сам (`STOCK_CREDITS`). Для фона главной: [Wikimedia Commons, CC0](https://commons.wikimedia.org/wiki/File:Moscow,_yellow_Porsche_on_a_red-white_Iveco,_May_2026_01.jpg). `prep_images.py` размывает на нём номера и надписи и отзеркаливает его. На сайте подписано «Фото для примера». Когда будет широкое (от 2400 px) фото эвакуатора клиента, заменить его. |
 
 ```
 python build.py          # черновик: пробелы в фактах видны оранжевыми пометками

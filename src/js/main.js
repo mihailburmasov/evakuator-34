@@ -88,7 +88,7 @@
   var calm = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   if ('IntersectionObserver' in window) {
-    var els = document.querySelectorAll('main .section h2, .svc-grid li, .why-card, .steps li, .geo-grid li, .gallery figure, .fleet-card, .stats li, .price-table tbody tr, .faq-item');
+    var els = document.querySelectorAll('main .section h2, .svc-grid li, .sit-grid li, .why-card, .steps li, .geo-grid li, .gallery figure, .fleet-card, .stats li, .price-table tbody tr, .faq-item');
     var io = new IntersectionObserver(function (entries) {
       entries.forEach(function (en) {
         if (en.isIntersecting) { en.target.classList.add('is-in'); io.unobserve(en.target); }
@@ -137,4 +137,42 @@
     if (!ticking) { ticking = true; requestAnimationFrame(onScroll); }
   }, { passive: true });
   onScroll();
+
+  // карта территорий: Leaflet + OpenStreetMap, грузим только когда блок у экрана
+  var mapEl = document.querySelector('.geo-map[data-points]');
+  if (mapEl && 'IntersectionObserver' in window) {
+    var LF = (document.querySelector('script[src*="/js/main.js"]').getAttribute('src').split('/js/main.js')[0]) + '/vendor/leaflet/';
+    var mio = new IntersectionObserver(function (entries) {
+      if (!entries[0].isIntersecting) return;
+      mio.disconnect();
+      var css = document.createElement('link');
+      css.rel = 'stylesheet'; css.href = LF + 'leaflet.min.css';
+      document.head.appendChild(css);
+      var js = document.createElement('script');
+      js.src = LF + 'leaflet.min.js';
+      js.onload = function () {
+        var L = window.L, pts = JSON.parse(mapEl.getAttribute('data-points'));
+        mapEl.innerHTML = '';
+        var map = L.map(mapEl, { scrollWheelZoom: false, zoomControl: true });
+        map.attributionControl.setPrefix('<a href="https://leafletjs.com" target="_blank" rel="noopener">Leaflet</a>');
+        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          maxZoom: 14, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        }).addTo(map);
+        var bounds = [];
+        pts.forEach(function (p, i) {
+          var icon = L.divIcon({
+            className: 'map-pin lbl-' + (p[4] || 'r') + (i === 0 ? ' is-main' : ''),
+            html: '<span>' + p[0] + '</span>', iconSize: [18, 18], iconAnchor: [9, 9]
+          });
+          L.marker([p[1], p[2]], { icon: icon, title: p[0], keyboard: true })
+            .on('click', function () { location.href = p[3]; }).addTo(map);
+          bounds.push([p[1], p[2]]);
+        });
+        map.fitBounds(bounds, { padding: [40, 40] });
+      };
+      js.onerror = function () { mapEl.querySelector('.geo-map-ph').textContent = 'Карту не удалось загрузить.'; };
+      document.head.appendChild(js);
+    }, { rootMargin: '200px 0px' });
+    mio.observe(mapEl);
+  }
 })();

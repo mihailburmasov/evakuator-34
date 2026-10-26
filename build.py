@@ -80,13 +80,14 @@ def img_variants(name):
     return out
 
 
-def picture(name, alt, sizes="(max-width: 860px) 100vw, 50vw", eager=False, cls=""):
+def picture(name, alt, sizes="(max-width: 860px) 100vw, 50vw", eager=False, cls="", focus=None):
     v = img_variants(name)
     srcset = ", ".join(f"/img/{f} {w}w" for f, w, _ in v)
     f, w, h = v[-1]
     load = 'fetchpriority="high"' if eager else 'loading="lazy" decoding="async"'
+    style = f' style="object-position:{focus}"' if focus else ""
     return (f'<img class="{cls}" src="/img/{f}" srcset="{srcset}" sizes="{sizes}" '
-            f'width="{w}" height="{h}" alt="{esc(alt)}" {load}>')
+            f'width="{w}" height="{h}" alt="{esc(alt)}" {load}{style}>')
 
 
 # ---------- общие куски ----------
@@ -371,25 +372,110 @@ def steps_block():
     return f'<section class="section"><div class="wrap"><h2>Как вызвать эвакуатор</h2><ol class="steps">{li}</ol></div></section>'
 
 
+# фото для карточек услуг: (картинка, alt, точка фокуса)
+SERVICE_IMG = {
+    "evakuaciya-legkovyh-avto": ("evakuator-logan", "Седан на платформе эвакуатора", "55% 60%"),
+    "perevozka-mototsiklov-kvadrotsiklov": ("sit-moto", "Мотоцикл закреплён ремнями на платформе", "60% 60%"),
+    "evakuaciya-spectehniki": ("evakuaciya-traktora", "Трактор на платформе эвакуатора", "55% 55%"),
+    "perevozka-lodok-katerov": ("sit-boat", "Катер на прицепе у спуска к воде", "50% 60%"),
+    "evakuator-mezhgorod": ("sit-road", "Трасса с указателем на Волгоград", "65% 60%"),
+    "pogruzka-vygruzka-tehniki": ("evakuaciya-traktorov", "Два эвакуатора с тракторами на платформах", "50% 60%"),
+}
+
+
+def svc_card(s):
+    img, alt, focus = SERVICE_IMG[s["slug"]]
+    return (f'<li><a class="svc-card" href="/{s["slug"]}/">'
+            f'<span class="svc-img">{picture(img, alt, sizes="(max-width: 700px) 100vw, 380px", focus=focus)}</span>'
+            f'<span class="svc-body"><h3>{esc(s["nav"])}</h3><p>{esc(s["short"])}</p>'
+            f'<span class="svc-price">{esc(s["price_from"])}</span></span></a></li>')
+
+
 def services_grid(exclude=None, title="Что перевозим"):
-    cards = []
-    for s in C.SERVICES:
-        if s["slug"] == exclude:
-            continue
-        cards.append(f'<li><a class="svc-card" href="/{s["slug"]}/"><h3>{esc(s["nav"])}</h3>'
-                     f'<p>{esc(s["short"])}</p><span class="svc-price">{esc(s["price_from"])}</span></a></li>')
-    return f'<section class="section"><div class="wrap"><h2>{esc(title)}</h2><ul class="svc-grid">{"".join(cards)}</ul></div></section>'
+    shown = [s for s in C.SERVICES if s["slug"] != exclude]
+    cards = "".join(svc_card(s) for s in shown)
+    return (f'<section class="section"><div class="wrap"><h2>{esc(title)}</h2><ul class="svc-grid">{cards}</ul>'
+            f'{credits_line([SERVICE_IMG[s["slug"]][0] for s in shown])}</div></section>')
 
 
-def geo_grid(exclude=None, title="Где работаем"):
+# плитки «Что случилось?»: (подпись, картинка, alt, фокус, ссылка)
+SITUATIONS = [
+    ("После ДТП", "sit-dtp", "Разбитый автомобиль после столкновения с деревом", "45% 60%", "/evakuaciya-legkovyh-avto/"),
+    ("Не заводится", "sit-hood", "Красный автомобиль с открытым капотом", "55% 60%", "/evakuaciya-legkovyh-avto/"),
+    ("Мотоцикл", "sit-moto", "Мотоцикл закреплён на платформе", "62% 60%", "/perevozka-mototsiklov-kvadrotsiklov/"),
+    ("Квадроцикл", "sit-atv", "Красный квадроцикл", "45% 70%", "/perevozka-mototsiklov-kvadrotsiklov/"),
+    ("Трактор или спецтехника", "evakuaciya-traktora", "Трактор на платформе эвакуатора", "50% 55%", "/evakuaciya-spectehniki/"),
+    ("Лодка или катер", "sit-boat", "Катер на прицепе у воды", "50% 60%", "/perevozka-lodok-katerov/"),
+    ("В другой город", "sit-road", "Трасса с указателем «Волгоград»", "68% 60%", "/evakuator-mezhgorod/"),
+    ("Снять с грузовика", "evakuator-5-tonn", "Эвакуатор со сдвижной платформой", "0% 50%", "/pogruzka-vygruzka-tehniki/"),
+]
+
+
+def situations_block():
+    tiles = "".join(
+        f'<li><a class="sit-tile" href="{url}">{picture(img, alt, sizes="(max-width: 700px) 50vw, 290px", focus=focus)}'
+        f'<span class="sit-label">{esc(label)}<i aria-hidden="true">→</i></span></a></li>'
+        for label, img, alt, focus, url in SITUATIONS)
+    return (f'<section class="section"><div class="wrap"><p class="kicker">Найдём решение</p><h2>Что случилось?</h2>'
+            f'<p class="lead">Выберите ситуацию — расскажем, сколько стоит и как всё будет.</p>'
+            f'<ul class="sit-grid">{tiles}</ul>{credits_line([t[1] for t in SITUATIONS])}</div></section>')
+
+
+# авторы стоковых фото: лицензии CC BY / CC BY-SA требуют подписи
+CREDITS = json.loads((ROOT / "_stock" / "credits.json").read_text(encoding="utf-8"))
+CREDITS["logan"] = {"artist": "Cjp24", "license": "CC BY-SA 4.0",
+                    "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+                    "page": "https://commons.wikimedia.org/wiki/File:Dacia_Logan_sur_d%C3%A9panneuse.jpg"}
+IMG_CREDIT = {"evakuator-logan": "logan", "sit-dtp": "dtp", "sit-hood": "hood", "sit-moto": "moto",
+              "sit-atv": "atv", "sit-boat": "boat", "sit-road": "road"}
+
+
+def credits_line(images):
+    keys = []
+    for i in images:
+        k = IMG_CREDIT.get(i)
+        if k and k not in keys:
+            keys.append(k)
+    if not keys:
+        return ""
+    parts = []
+    for k in keys:
+        c = CREDITS[k]
+        lic = (f'<a href="{esc(c["license_url"])}" target="_blank" rel="noopener">{esc(c["license"])}</a>'
+               if c.get("license_url") else esc(c["license"]))
+        parts.append(f'<a href="{esc(c["page"])}" target="_blank" rel="noopener">{esc(c["artist"])}</a> ({lic})')
+    return (f'<p class="photo-credits">Часть фото — для примера, с Wikimedia Commons: {", ".join(parts)}. '
+            f'Остальные — наши эвакуаторы.</p>')
+
+
+# точки на карте: (подпись, широта, долгота, страница). Карта — OpenStreetMap через Leaflet (main.js),
+# без рекламы и ключей; грузится, только когда блок доходит до экрана.
+# последний элемент — с какой стороны от точки подпись (r/l/t/b), чтобы соседние не наползали
+MAP_POINTS = [("Волжский", 48.7858, 44.7647, "/", "t"), ("Средняя Ахтуба", 48.7008, 44.8869, "/evakuator-srednyaya-ahtuba/", "b"),
+              ("Краснослободск", 48.7064, 44.5639, "/evakuator-krasnoslobodsk/", "l"), ("Ленинск", 48.6994, 45.2014, "/evakuator-leninsk/", "r"),
+              ("Быково", 49.6347, 45.3740, "/evakuator-bykovo/", "r"), ("Дубовка", 49.0560, 44.8270, "/evakuator-dubovka/", "l"),
+              ("Горный Балыклей", 49.6110, 45.0570, "/evakuator-gornyy-balykley/", "l"), ("Знаменск", 48.5840, 45.7350, "/evakuator-znamensk/", "b")]
+
+
+def area_map():
+    pts = json.dumps([list(p) for p in MAP_POINTS], ensure_ascii=False)
+    names = ", ".join(p[0] for p in MAP_POINTS)
+    return (f'<div class="geo-map" data-points="{esc(pts)}" role="img" aria-label="Карта: {esc(names)}">'
+            f'<p class="geo-map-ph">Карта загружается…</p></div>')
+
+
+def geo_grid(exclude=None, title="Где работаем", with_map=False):
     cards = [f'<li><a class="geo-card" href="/">{ICON_PIN}<span><b>Волжский</b><small>Волгоградская область</small></span></a></li>']
     for g in C.GEO:
         if g["slug"] == exclude:
             continue
         cards.append(f'<li><a class="geo-card" href="/{g["slug"]}/">{ICON_PIN}<span><b>{esc(g["name"])}</b>'
                      f'<small>{esc(g["region"])}</small></span></a></li>')
+    grid = f'<ul class="geo-grid">{"".join(cards)}</ul>'
+    if with_map:
+        grid = f'<div class="geo-layout">{grid}{area_map()}</div>'
     return (f'<section class="section section-alt"><div class="wrap"><h2>{esc(title)}</h2>'
-            f'<p class="lead">{esc(C.ASSIGNED)}</p><ul class="geo-grid">{"".join(cards)}</ul></div></section>')
+            f'<p class="lead">{esc(C.ASSIGNED)}</p>{grid}</div></section>')
 
 
 def gallery_block():
@@ -476,6 +562,7 @@ def home():
             'target="_blank" rel="noopener">Wikimedia Commons</a>, CC0'),
     )
     body += stats_block()
+    body += situations_block()
     body += services_grid()
     body += f'''<section class="section section-alt" id="ceny"><div class="wrap price-layout">
   <div><h2>Стоимость услуг</h2>
@@ -488,7 +575,7 @@ def home():
     body += why_block()
     body += fleet_block()
     body += steps_block()
-    body += geo_grid()
+    body += geo_grid(with_map=True)
     body += gallery_block()
     body += f'''<section class="section section-alt"><div class="wrap narrow prose">
   <h2>Эвакуатор-34 — эвакуация техники в Волжском и области</h2>
@@ -543,8 +630,7 @@ def geo_page(g):
     if g.get("draft"):
         DRAFTS.append(f'Тексты страницы /{g["slug"]}/')
     places = "".join(f"<li>{ICON_PIN}<span>{esc(p)}</span></li>" for p in g["places"])
-    focus = "".join(f'<li><a class="svc-card" href="/{k}/"><h3>{esc(SERVICES[k]["nav"])}</h3><p>{esc(SERVICES[k]["short"])}</p>'
-                    f'<span class="svc-price">{esc(SERVICES[k]["price_from"])}</span></a></li>' for k in g["services_focus"])
+    focus = "".join(svc_card(SERVICES[k]) for k in g["services_focus"])
     related = " · ".join(f'<a href="/{r}/">{esc(GEO[r]["name"])}</a>' for r in g["related"])
     body = hero(esc(g["h1"]), esc(g["lead"]), "evakuator-logan" if g["slug"] != "evakuator-bykovo" else "evakuaciya-traktorov",
                 "Синий седан на платформе эвакуатора" if g["slug"] != "evakuator-bykovo" else f'Эвакуатор {g["in"]}', ["Вызов бесплатно", "Легковые от 1 500 ₽", "До 5 тонн", "До 5 пассажиров"],
@@ -645,7 +731,7 @@ def privacy_page():
 <h2>6. Передача третьим лицам</h2>
 <p>Мы не продаём и не передаём ваши данные третьим лицам, кроме случаев, предусмотренных законом. Статистические данные обрабатывает ООО «Яндекс» в рамках сервиса Яндекс Метрика.</p>
 <h2>7. Cookie</h2>
-<p>Сайт использует cookie, чтобы корректно работать, и сервис Яндекс Метрика — чтобы анализировать посещаемость. Отключить cookie можно в настройках браузера.</p>
+<p>Сайт использует cookie, чтобы корректно работать, сервис Яндекс Метрика — чтобы анализировать посещаемость. Карта на главной загружается с серверов OpenStreetMap. Отключить cookie можно в настройках браузера.</p>
 <h2>8. Ваши права</h2>
 <p>Вы вправе узнать, какие данные о вас обрабатываются, потребовать их уточнения или удаления, отозвать согласие. Напишите на {fact("email")} или позвоните {PHONE}.</p>
 <p class="small muted">Редакция от {TODAY}.</p>
@@ -781,7 +867,7 @@ def main():
     DIST.mkdir(exist_ok=True)
     for p in DIST.iterdir():  # чистим содержимое, саму папку может держать локальный сервер
         shutil.rmtree(p) if p.is_dir() else p.unlink()
-    for sub in ("css", "js", "img", "fonts"):
+    for sub in ("css", "js", "img", "fonts", "vendor"):
         shutil.copytree(SRC / sub, DIST / sub)
     # старые фото — по прежним адресам (могут быть в Яндекс Картинках)
     shutil.copytree(ROOT / "_old_site" / "gallery_gen", DIST / "gallery_gen")
