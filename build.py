@@ -260,7 +260,7 @@ def page(path, title, desc, body, ld=(), crumbs=None, noindex=False):
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="theme-color" content="#16181c">
+<meta name="theme-color" content="#1e2d3f">
 <meta name="yandex-verification" content="{S["yandex_verification"]}">
 <link rel="icon" href="/img/favicon-32.png" type="image/png">
 <link rel="apple-touch-icon" href="/img/apple-touch-icon.png">
