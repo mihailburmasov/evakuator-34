@@ -10,7 +10,6 @@ OUT.mkdir(parents=True, exist_ok=True)
 
 # имя файла → (исходник, кадрирование или None)
 PHOTOS = {
-    "evakuator-legkovoy": ("1f6048ad29ccd61b2c92dce92405fb69_1180x884.jpg", None),
     "evakuaciya-traktorov": ("6e3897a68ac23d05b90c74efaabc4dca_1180x884.jpg", None),
     "evakuaciya-traktora": ("cea39c185c9c451aba2acd981f9304cf_1180x888.jpg", None),
     # коллаж 800×800: сверху ГАЗель на 5 мест, снизу Hyundai HD78 на 5 тонн
@@ -56,8 +55,17 @@ hero = ImageOps.mirror(hero)
 for w in (2400, 1600, 960):
     hero.resize((w, round(hero.height * w / hero.width)), Image.LANCZOS).save(OUT / f"hero-evakuator-{w}.webp", "WEBP", quality=78, method=6)
 
-# OG-картинка: фото легкового эвакуатора + тёмная плашка с телефоном
-og = Image.open(SRC / PHOTOS["evakuator-legkovoy"][0]).convert("RGB")
+# Стоковое фото для внутренних страниц (Wikimedia Commons, Cjp24, CC BY-SA 4.0):
+# https://commons.wikimedia.org/wiki/File:Dacia_Logan_sur_d%C3%A9panneuse.jpg
+# Номера на нём пустые; размываем надпись DEPANNAGE на проблесковом маячке.
+logan = Image.open(ROOT / "_stock" / "logan-commons-original.jpg").convert("RGB")
+k = logan.width / 1920
+box = tuple(round(v * k) for v in (1340, 512, 1462, 550))
+logan.paste(logan.crop(box).filter(ImageFilter.GaussianBlur(10)), box)
+manifest["evakuator-logan"] = save_webp(logan, "evakuator-logan")
+
+# OG-картинка: стоковое фото эвакуатора с машиной + тёмная плашка с телефоном
+og = logan.copy()
 scale = 1200 / og.width
 og = og.resize((1200, round(og.height * scale)), Image.LANCZOS)
 top = (og.height - 630) // 2

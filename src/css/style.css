@@ -135,6 +135,7 @@ ul,ol{margin:0;padding:0;list-style:none}
 .hero-full .chips li{background:rgba(255,255,255,.88)}
 .hero-credit{position:absolute;right:12px;bottom:18px;margin:0;font-size:12px;color:var(--muted);background:rgba(255,255,255,.82);padding:3px 8px;border-radius:4px}
 .hero-credit a{color:inherit}
+.hero-media .hero-credit{right:10px;bottom:10px}
 @media(max-width:860px){
   .hero-full{flex-direction:column;align-items:stretch;min-height:0}
   .hero-bg-img{position:relative;order:2;height:250px}
@@ -193,7 +194,7 @@ ul,ol{margin:0;padding:0;list-style:none}
 .fleet-card img{width:100%;aspect-ratio:760/370;object-fit:cover}
 .fleet-card figcaption{padding:18px 20px 20px;color:var(--muted)}
 .fleet-card b{display:block;font:600 22px/1.2 var(--head);text-transform:uppercase;color:var(--text);margin-bottom:6px}
-.gallery{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:22px}
+.gallery{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-top:22px}
 @media(max-width:860px){.gallery{grid-template-columns:1fr}}
 .gallery figure{margin:0}
 .gallery img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:var(--radius)}
@@ -242,7 +243,8 @@ ul,ol{margin:0;padding:0;list-style:none}
 .faq-item summary{list-style:none;cursor:pointer;padding:16px 50px 16px 18px;position:relative}
 .faq-item summary::-webkit-details-marker{display:none}
 .faq-item summary::after{content:"+";position:absolute;right:18px;top:50%;transform:translateY(-50%);font:500 28px/1 var(--head);color:#c98f00}
-.faq-item[open] summary::after{content:"−"}
+.faq-item summary::after{transition:transform .25s ease}
+.faq-item[open] summary::after{transform:translateY(-50%) rotate(45deg)}
 .faq-item h3{margin:0;font-size:19px;text-transform:none}
 .faq-item p{padding:0 18px 18px;margin:0;color:var(--muted)}
 
@@ -309,7 +311,85 @@ ul,ol{margin:0;padding:0;list-style:none}
 .cookie[hidden]{display:none}
 @media(max-width:860px){.cookie{bottom:84px}}
 
+/* полоса цифр под первым экраном */
+.stats-band{background:var(--white);border-bottom:1px solid var(--line)}
+.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:0}
+.stats li{padding:22px 12px;text-align:center;border-right:1px solid var(--line)}
+.stats li:last-child{border-right:0}
+.stats b{display:block;font:600 clamp(28px,3.2vw,40px)/1 var(--head);color:var(--text)}
+.stats b em{font-style:normal;color:var(--accent-text)}
+.stats li>span{display:block;margin-top:6px;font-size:14.5px;color:var(--muted)}
+.stats [data-count]{font-variant-numeric:tabular-nums}
+@media(max-width:860px){
+  .stats{grid-template-columns:repeat(2,1fr)}
+  .stats li{border-right:0;border-bottom:1px solid var(--line);padding:16px 8px}
+  .stats li:nth-child(odd){border-right:1px solid var(--line)}
+  .stats li:last-child{grid-column:1/-1;border-right:0;border-bottom:0}
+}
+
+/* ---------- эффекты ---------- */
 /* появление при прокрутке — только если JS работает */
-.js .reveal{opacity:0;transform:translateY(18px);transition:opacity .5s ease,transform .5s ease}
+.js .reveal{opacity:0;transform:translateY(22px);transition:opacity .6s cubic-bezier(.2,.7,.2,1),transform .6s cubic-bezier(.2,.7,.2,1)}
 .js .reveal.is-in{opacity:1;transform:none}
-@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.js .reveal{opacity:1;transform:none;transition:none}*{transition:none!important}}
+.js .price-table tr.reveal{transform:translateX(-12px)}
+.js .price-table tr.reveal.is-in{transform:none}
+
+/* первый экран: текст выезжает по очереди, фото плавно «наезжает» */
+@keyframes heroIn{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+@keyframes heroZoom{from{transform:scale(1.08)}to{transform:scale(1)}}
+.js .hero-text>*{animation:heroIn .55s cubic-bezier(.2,.7,.2,1) both}
+.js .hero-text>:nth-child(2){animation-delay:.06s}
+.js .hero-text>:nth-child(3){animation-delay:.14s}
+.js .hero-text>:nth-child(4){animation-delay:.22s}
+.js .hero-text>:nth-child(5){animation-delay:.3s}
+.js .hero-text>:nth-child(6){animation-delay:.38s}
+.js .hero-media{animation:heroIn .7s .15s cubic-bezier(.2,.7,.2,1) both}
+.hero-bg-img{overflow:hidden}
+@media(min-width:861px){.js .hero-bg-img{animation:heroZoom 1.8s cubic-bezier(.2,.7,.2,1) both}}
+.hero-bg-img img{will-change:transform}
+
+/* «зебра» внизу первого экрана медленно бежит */
+@keyframes stripes{to{background-position:50.9px 0}}
+.hero::after,.page-head::after{animation:stripes 2.4s linear infinite}
+
+/* кнопка звонка мягко пульсирует, телефон в мобильной панели покачивается */
+@keyframes ring{0%{box-shadow:0 6px 20px rgba(255,190,0,.35),0 0 0 0 rgba(255,190,0,.55)}70%,100%{box-shadow:0 6px 20px rgba(255,190,0,.35),0 0 0 16px rgba(255,190,0,0)}}
+@keyframes wiggle{0%,80%,100%{transform:rotate(0)}84%{transform:rotate(-14deg)}88%{transform:rotate(12deg)}92%{transform:rotate(-8deg)}96%{transform:rotate(5deg)}}
+.hero .btn-call,.mb-call{animation:ring 2.4s ease-out infinite}
+.btn-call .btn-ico svg,.mb-call svg{animation:wiggle 3.2s ease-in-out infinite;transform-origin:50% 50%}
+
+/* шапка получает тень при прокрутке */
+.site-header{transition:box-shadow .25s ease}
+.scrolled .site-header{box-shadow:0 6px 24px rgba(60,45,10,.12)}
+
+/* карточки услуг: стрелка выезжает при наведении */
+.svc-card{position:relative}
+.svc-card::after{content:"→";position:absolute;right:20px;bottom:18px;font:600 24px/1 var(--head);color:var(--accent-text);opacity:0;transform:translateX(-10px);transition:opacity .2s,transform .2s}
+.svc-card:hover::after{opacity:1;transform:none}
+.svc-price{transition:background .2s}
+.svc-card:hover .svc-price{background:var(--amber)}
+
+/* фото приближаются при наведении */
+.gallery figure,.fleet-card{overflow:hidden}
+.gallery figure img,.fleet-card img{transition:transform .5s cubic-bezier(.2,.7,.2,1)}
+.gallery figure:hover img,.fleet-card:hover img{transform:scale(1.045)}
+.gallery figure{border-radius:var(--radius)}
+
+/* иконки и номера шагов «выпрыгивают» при появлении */
+@keyframes pop{0%{transform:scale(.4)}70%{transform:scale(1.12)}100%{transform:scale(1)}}
+.js .why-card.is-in .why-ico,.js .steps li.is-in .step-n{animation:pop .5s .15s cubic-bezier(.2,.7,.2,1) both}
+.why-card,.geo-card{transition:border-color .2s,transform .2s,box-shadow .2s}
+.why-card:hover{transform:translateY(-3px);box-shadow:var(--shadow);border-color:var(--amber)}
+
+/* плавное раскрытие ответов (где браузер умеет) */
+@supports selector(::details-content){
+  :root{interpolate-size:allow-keywords}
+  .faq-item::details-content{height:0;overflow:clip;transition:height .3s ease,content-visibility .3s allow-discrete}
+  .faq-item[open]::details-content{height:auto}
+}
+
+@media(prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  .js .reveal,.js .price-table tr.reveal{opacity:1;transform:none}
+  *,*::before,*::after{transition:none!important;animation:none!important}
+}

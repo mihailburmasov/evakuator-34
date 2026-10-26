@@ -394,7 +394,6 @@ def geo_grid(exclude=None, title="Где работаем"):
 
 def gallery_block():
     items = [
-        ("evakuator-legkovoy", "Перевозка легкового автомобиля", "Серебристый седан на платформе эвакуатора"),
         ("evakuaciya-traktorov", "Два трактора — два эвакуатора", "Два эвакуатора Hyundai HD78 с тракторами Беларус"),
         ("evakuaciya-traktora", "Трактор на платформе", "Зелёный трактор Zoomlion на красном эвакуаторе"),
     ]
@@ -426,6 +425,7 @@ def hero(h1, lead, img, img_alt, chips, eyebrow, bg=None):
         bg_html = f'<div class="hero-bg-img">{picture(name, alt, sizes="100vw", eager=True)}</div>'
         credit = f'<p class="hero-credit">{credit}</p>'
     cls = " hero-full" if bg else " hero-noimg" if not img else ""
+    media_credit = f'<p class="hero-credit">{STOCK_CREDITS[img]}</p>' if img in STOCK_CREDITS else ""
     return f'''<section class="hero{cls}">{bg_html}<div class="wrap hero-in">
   <div class="hero-text">
     <p class="eyebrow">{eyebrow}</p>
@@ -435,8 +435,29 @@ def hero(h1, lead, img, img_alt, chips, eyebrow, bg=None):
     <div class="hero-actions">{tel_link("btn btn-call btn-lg")}{messenger_btn("whatsapp", "WhatsApp", "https://wa.me/{}")}</div>
     <p class="hero-note">Круглосуточно · вызов бесплатно</p>
   </div>
-  {f'<div class="hero-media">{pic}</div>' if pic and not bg else ''}
+  {f'<div class="hero-media">{pic}{media_credit}</div>' if pic and not bg else ''}
 </div>{credit}</section>'''
+
+
+# стоковые фото и их обязательные подписи (лицензия CC BY-SA требует указать автора)
+STOCK_CREDITS = {
+    "evakuator-logan": 'Фото для примера · Cjp24, <a href="https://commons.wikimedia.org/wiki/File:Dacia_Logan_sur_d%C3%A9panneuse.jpg" '
+                       'target="_blank" rel="noopener">Wikimedia Commons</a>, <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.ru" '
+                       'target="_blank" rel="noopener">CC BY-SA 4.0</a>',
+}
+
+
+def stats_block():
+    """Полоса цифр под первым экраном. Только факты с сайта; data-count — для анимации счёта."""
+    items = [
+        ('до <span data-count="5">5</span> т', "грузоподъёмность"),
+        ('<span data-count="5">5</span> мест', "в кабине для пассажиров"),
+        ('<em>24/7</em>', "без выходных и праздников"),
+        ('<span data-count="8">8</span>', f"городов и районов, включая Знаменск"),
+        ('от <span data-count="1200">1 200</span> ₽', "вызов бесплатно"),
+    ]
+    li = "".join(f"<li><b>{v}</b><span>{esc(t)}</span></li>" for v, t in items)
+    return f'<section class="stats-band" aria-label="Коротко о нас"><ul class="wrap stats">{li}</ul></section>'
 
 
 # ---------- страницы ----------
@@ -447,13 +468,14 @@ def home():
         "Эвакуатор в Волжском и районах области — круглосуточно",
         "Перевезём любую технику до 5 тонн: автомобили, мотоциклы, тракторы, лодки. "
         "Есть эвакуатор с кабиной на 5 мест — пассажиры едут вместе с машиной.",
-        "evakuator-legkovoy", "Эвакуатор везёт серебристый седан по трассе под Волжским",
+        None, "",
         ["Вызов бесплатно", "Легковые от 1 500 ₽", "До 5 тонн", "До 5 пассажиров"],
         "Волжский · Ахтуба · Ленинск · Быково · Краснослободск · Дубовка · Горный Балыклей · Знаменск",
         bg=("hero-evakuator", "Эвакуатор с платформой везёт жёлтый спорткар по городу",
             'Фото для примера · <a href="https://commons.wikimedia.org/wiki/File:Moscow,_yellow_Porsche_on_a_red-white_Iveco,_May_2026_01.jpg" '
             'target="_blank" rel="noopener">Wikimedia Commons</a>, CC0'),
     )
+    body += stats_block()
     body += services_grid()
     body += f'''<section class="section section-alt" id="ceny"><div class="wrap price-layout">
   <div><h2>Стоимость услуг</h2>
@@ -524,8 +546,8 @@ def geo_page(g):
     focus = "".join(f'<li><a class="svc-card" href="/{k}/"><h3>{esc(SERVICES[k]["nav"])}</h3><p>{esc(SERVICES[k]["short"])}</p>'
                     f'<span class="svc-price">{esc(SERVICES[k]["price_from"])}</span></a></li>' for k in g["services_focus"])
     related = " · ".join(f'<a href="/{r}/">{esc(GEO[r]["name"])}</a>' for r in g["related"])
-    body = hero(esc(g["h1"]), esc(g["lead"]), "evakuator-legkovoy" if g["slug"] != "evakuator-bykovo" else "evakuaciya-traktorov",
-                f'Эвакуатор {g["in"]}', ["Вызов бесплатно", "Легковые от 1 500 ₽", "До 5 тонн", "До 5 пассажиров"],
+    body = hero(esc(g["h1"]), esc(g["lead"]), "evakuator-logan" if g["slug"] != "evakuator-bykovo" else "evakuaciya-traktorov",
+                "Синий седан на платформе эвакуатора" if g["slug"] != "evakuator-bykovo" else f'Эвакуатор {g["in"]}', ["Вызов бесплатно", "Легковые от 1 500 ₽", "До 5 тонн", "До 5 пассажиров"],
                 f'{esc(g["name"])} · {esc(g["region"])} · 24/7')
     body += f'''<section class="section"><div class="wrap two-col">
   <div class="prose">
